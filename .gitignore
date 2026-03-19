@@ -1,0 +1,26 @@
+# Environment
+.env
+venv/
+__pycache__/
+*.pyc
+.DS_Store
+
+# Data (too large for git)
+data/raw/
+data/processed/
+
+# Airflow
+logs/
+airflow.db
+airflow.cfg
+
+# Python
+*.egg-info/
+dist/
+.pytest_cache/
+
+# Airflow
+airflow/logs/
+airflow/airflow.db
+airflow/webserver_config.py
+airflow/__pycache__/
