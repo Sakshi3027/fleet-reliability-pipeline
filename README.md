@@ -1,4 +1,4 @@
-# 🚗 Fleet Reliability Pipeline
+# Fleet Reliability Pipeline
 
 An end-to-end EV fleet data engineering project simulating the kind of
 reliability infrastructure used at companies like Tesla, Rivian, and Lucid.

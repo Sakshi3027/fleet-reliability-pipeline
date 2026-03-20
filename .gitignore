@@ -23,4 +23,4 @@ dist/
 airflow/logs/
 airflow/airflow.db
 airflow/webserver_config.py
-airflow/__pycache__/
+airflow/__pycache__/.streamlit/secrets.toml
