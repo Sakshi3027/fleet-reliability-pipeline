@@ -29,23 +29,27 @@ def get_conn_string():
 def load_query(sql: str) -> pd.DataFrame:
     import psycopg2
     url = get_conn_string()
-    # Parse the URL manually for psycopg2
-    # Format: postgresql+psycopg2://user:pass@host:port/dbname
     url = url.replace("postgresql+psycopg2://", "").replace("postgresql://", "")
     user_pass, rest   = url.split("@", 1)
     user, password    = user_pass.split(":", 1)
     host_port, dbname = rest.split("/", 1)
     host, port        = host_port.split(":", 1)
 
-    conn = psycopg2.connect(
-        host=host,
-        port=int(port),
-        dbname=dbname,
-        user=user,
-        password=password,
-        sslmode="require",
-        connect_timeout=10,
-    )
+    try:
+        conn = psycopg2.connect(
+            host=host,
+            port=int(port),
+            dbname=dbname,
+            user=user,
+            password=password,
+            sslmode="require",
+            connect_timeout=10,
+        )
+    except Exception as e:
+        st.error(f"DB connection failed: {e}")
+        st.write(f"Host: {host} | Port: {port} | DB: {dbname} | User: {user}")
+        raise
+
     cur  = conn.cursor()
     cur.execute(sql)
     rows = cur.fetchall()
