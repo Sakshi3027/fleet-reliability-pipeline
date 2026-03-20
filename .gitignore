@@ -10,17 +10,21 @@ data/raw/
 data/processed/
 
 # Airflow
+airflow/
 logs/
-airflow.db
-airflow.cfg
 
 # Python
 *.egg-info/
 dist/
 .pytest_cache/
 
-# Airflow
-airflow/logs/
-airflow/airflow.db
-airflow/webserver_config.py
-airflow/__pycache__/.streamlit/secrets.toml
+# Streamlit
+.streamlit/secrets.toml
+
+# dbt
+dbt/fleet_dbt/target/
+dbt/fleet_dbt/logs/
+dbt/fleet_dbt/.user.yml
+
+# Scripts with credentials
+scripts/push_to_supabase.py
