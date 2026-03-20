@@ -1,8 +1,3 @@
-"""
-dashboard/app.py — Fleet Reliability KPI Dashboard
-Run: streamlit run dashboard/app.py
-"""
-
 import os
 import warnings
 import pandas as pd
@@ -25,13 +20,13 @@ st.set_page_config(
 # ── DB connection ─────────────────────────────────────────────────────────────
 @st.cache_resource
 def get_engine():
-    url = os.getenv("SUPABASE_URL")
-    if not url:
-        # fallback to local for development
-        url = (
-            f"postgresql+psycopg2://{os.getenv('DB_USER')}:{os.getenv('DB_PASSWORD')}"
-            f"@{os.getenv('DB_HOST')}:{os.getenv('DB_PORT')}/{os.getenv('DB_NAME')}"
-        )
+    # Streamlit Cloud reads from st.secrets
+    # Local dev reads from .env
+    try:
+        url = st.secrets["SUPABASE_URL"]
+    except Exception:
+        load_dotenv()
+        url = os.getenv("SUPABASE_URL")
     return create_engine(url)
 
 
