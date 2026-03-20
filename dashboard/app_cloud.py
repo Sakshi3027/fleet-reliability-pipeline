@@ -18,30 +18,40 @@ st.set_page_config(
 )
 
 # ── DB connection ─────────────────────────────────────────────────────────────
-@st.cache_resource
-def get_engine():
+def get_conn_string():
     try:
-        url = st.secrets["SUPABASE_URL"]
+        return st.secrets["SUPABASE_URL"]
     except Exception:
         load_dotenv()
-        url = os.getenv("SUPABASE_URL")
-    # Supabase requires SSL
-    return create_engine(url, connect_args={"sslmode": "require"})
+        return os.getenv("SUPABASE_URL")
 
 
-# ── Data loaders ──────────────────────────────────────────────────────────────
-@st.cache_data(ttl=300)
 def load_query(sql: str) -> pd.DataFrame:
-    engine = get_engine()
-    raw_conn = engine.raw_connection()
-    try:
-        cur = raw_conn.cursor()
-        cur.execute(sql)
-        rows = cur.fetchall()
-        cols = [d[0] for d in cur.description]
-        cur.close()
-    finally:
-        raw_conn.close()
+    import psycopg2
+    url = get_conn_string()
+    # Parse the URL manually for psycopg2
+    # Format: postgresql+psycopg2://user:pass@host:port/dbname
+    url = url.replace("postgresql+psycopg2://", "").replace("postgresql://", "")
+    user_pass, rest   = url.split("@", 1)
+    user, password    = user_pass.split(":", 1)
+    host_port, dbname = rest.split("/", 1)
+    host, port        = host_port.split(":", 1)
+
+    conn = psycopg2.connect(
+        host=host,
+        port=int(port),
+        dbname=dbname,
+        user=user,
+        password=password,
+        sslmode="require",
+        connect_timeout=10,
+    )
+    cur  = conn.cursor()
+    cur.execute(sql)
+    rows = cur.fetchall()
+    cols = [d[0] for d in cur.description]
+    cur.close()
+    conn.close()
     return pd.DataFrame(rows, columns=cols)
 
 
