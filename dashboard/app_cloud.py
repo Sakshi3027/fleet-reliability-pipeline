@@ -20,14 +20,13 @@ st.set_page_config(
 # ── DB connection ─────────────────────────────────────────────────────────────
 @st.cache_resource
 def get_engine():
-    # Streamlit Cloud reads from st.secrets
-    # Local dev reads from .env
     try:
         url = st.secrets["SUPABASE_URL"]
     except Exception:
         load_dotenv()
         url = os.getenv("SUPABASE_URL")
-    return create_engine(url)
+    # Supabase requires SSL
+    return create_engine(url, connect_args={"sslmode": "require"})
 
 
 # ── Data loaders ──────────────────────────────────────────────────────────────
