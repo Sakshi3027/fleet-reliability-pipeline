@@ -1,0 +1,18 @@
+version: 2
+
+models:
+  - name: int_vehicle_faults
+    description: "Fault events enriched with vehicle metadata and age calculation."
+    columns:
+      - name: fault_id
+        tests: [unique, not_null]
+      - name: vehicle_age_years
+        description: "Vehicle age in years at time of fault"
+
+  - name: int_repair_enriched
+    description: "Repairs joined with fault context and vehicle model info."
+    columns:
+      - name: repair_id
+        tests: [unique, not_null]
+      - name: total_repair_cost
+        description: "parts_cost_usd + labor_cost_usd"

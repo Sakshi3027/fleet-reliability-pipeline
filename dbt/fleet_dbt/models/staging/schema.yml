@@ -1,0 +1,40 @@
+version: 2
+
+models:
+  - name: stg_fault_codes
+    description: "Cleaned OBD-II fault events. Filters nulls and invalid severities."
+    columns:
+      - name: fault_id
+        tests: [unique, not_null]
+      - name: vehicle_id
+        tests: [not_null]
+      - name: severity
+        tests:
+          - accepted_values:
+              values: ['critical', 'high', 'medium', 'low']
+      - name: is_resolved
+        tests: [not_null]
+
+  - name: stg_repair_logs
+    description: "Cleaned repair records. Filters invalid MTTR and date ranges."
+    columns:
+      - name: repair_id
+        tests: [unique, not_null]
+      - name: mttr_hours
+        tests: [not_null]
+
+  - name: stg_vehicles
+    description: "Vehicle registry with model and battery specs."
+    columns:
+      - name: vehicle_id
+        tests: [unique, not_null]
+      - name: vin
+        tests: [unique, not_null]
+
+  - name: stg_telemetry
+    description: "Weekly sensor snapshots. Filters SOH outside 0-100 range."
+    columns:
+      - name: telemetry_id
+        tests: [unique, not_null]
+      - name: battery_soh_pct
+        tests: [not_null]

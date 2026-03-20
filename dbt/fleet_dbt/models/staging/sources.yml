@@ -1,0 +1,43 @@
+version: 2
+
+sources:
+  - name: raw
+    description: "Raw tables loaded by the ETL ingest pipeline"
+    schema: public
+    tables:
+      - name: raw_fault_codes
+        description: "OBD-II fault events from vehicle ECUs"
+        columns:
+          - name: fault_id
+            tests: [unique, not_null]
+          - name: vehicle_id
+            tests: [not_null]
+          - name: severity
+            tests:
+              - not_null
+              - accepted_values:
+                  values: ['critical', 'high', 'medium', 'low']
+
+      - name: raw_repair_logs
+        description: "Workshop repair records with MTTR and cost"
+        columns:
+          - name: repair_id
+            tests: [unique, not_null]
+          - name: vehicle_id
+            tests: [not_null]
+
+      - name: raw_vehicles
+        description: "Vehicle registry with model and battery specs"
+        columns:
+          - name: vehicle_id
+            tests: [unique, not_null]
+          - name: vin
+            tests: [unique, not_null]
+
+      - name: raw_telemetry
+        description: "Weekly sensor snapshots per vehicle"
+        columns:
+          - name: telemetry_id
+            tests: [unique, not_null]
+          - name: vehicle_id
+            tests: [not_null]

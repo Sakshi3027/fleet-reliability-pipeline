@@ -1,0 +1,32 @@
+version: 2
+
+models:
+  - name: mart_mttr
+    description: "Mean time to repair aggregated by component, severity, and month."
+    columns:
+      - name: component
+        tests: [not_null]
+      - name: avg_mttr_hours
+        description: "Average repair time in hours"
+      - name: median_mttr_hours
+        description: "Median repair time — more robust than mean for skewed data"
+      - name: total_cost
+        description: "Total repair cost for this component/severity/month"
+
+  - name: mart_failure_rates
+    description: "Fault counts and resolution rates by vehicle, component, and month."
+    columns:
+      - name: open_rate_pct
+        description: "Percentage of faults still unresolved"
+      - name: avg_vehicle_age_years
+        description: "Average vehicle age at time of fault"
+
+  - name: mart_vehicle_health
+    description: "Monthly vehicle health scorecard combining telemetry, faults, and repairs."
+    columns:
+      - name: avg_battery_soh_pct
+        description: "Average battery state of health — below 80% is degraded"
+      - name: has_pending_ota
+        description: "True if any OTA update was pending during the month"
+      - name: total_repair_cost
+        description: "Total repair spend for this vehicle in this month"
