@@ -244,23 +244,33 @@ with fc2:
 # ── Row 5: Recent critical faults ────────────────────────────────────────────
 st.markdown("---")
 st.subheader("Recent Critical & High Faults")
+
 recent = (
     df_faults[df_faults["severity"].isin(["critical", "high"])]
     .sort_values("occurred_at", ascending=False)
-    .head(20)[["occurred_at", "vehicle_id", "component",
-               "fault_code", "description", "severity", "resolved"]]
+    .head(20)
+    .copy()
 )
-recent["occurred_at"] = pd.to_datetime(recent["occurred_at"], utc=True).dt.strftime("%Y-%m-%d %H:%M")
 
-def highlight_severity(row):
-    if row["severity"] == "critical":
-        return ["background-color: rgba(226,75,74,0.15); color: inherit"] * len(row)
-    elif row["severity"] == "high":
-        return ["background-color: rgba(239,159,39,0.15); color: inherit"] * len(row)
-    return [""] * len(row)
+recent["occurred_at"] = pd.to_datetime(
+    recent["occurred_at"], utc=True
+).dt.strftime("%Y-%m-%d %H:%M")
+
+recent = recent[[
+    "occurred_at", "vehicle_id", "component",
+    "fault_code", "description", "severity", "resolved"
+]]
+
+# Add a visual severity indicator column
+recent.insert(0, "🔴", recent["severity"].map({
+    "critical": "🔴",
+    "high":     "🟠",
+    "medium":   "🟡",
+    "low":      "🟢",
+}))
 
 st.dataframe(
-    recent.style.apply(highlight_severity, axis=1),
+    recent,
     use_container_width=True,
     hide_index=True,
 )
