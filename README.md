@@ -1,7 +1,22 @@
 # Fleet Reliability Pipeline
 
+![CI](https://github.com/Sakshi3027/fleet-reliability-pipeline/actions/workflows/ci.yml/badge.svg)
+![Python](https://img.shields.io/badge/python-3.12-blue.svg)
+![dbt](https://img.shields.io/badge/dbt-1.11-orange.svg)
+![Airflow](https://img.shields.io/badge/airflow-2.9-017CEE.svg)
+![PostgreSQL](https://img.shields.io/badge/postgresql-15-336791.svg)
+![Streamlit](https://img.shields.io/badge/streamlit-live-FF4B4B.svg)
+![License](https://img.shields.io/badge/license-MIT-green.svg)
+![Tests](https://img.shields.io/badge/tests-11%20passed-brightgreen.svg)
+![dbt Tests](https://img.shields.io/badge/dbt%20tests-35%20passed-brightgreen.svg)
+
 An end-to-end EV fleet data engineering project simulating the kind of
 reliability infrastructure used at companies like Tesla, Rivian, and Lucid.
+
+## Live Dashboard
+
+**[fleet-reliability-pipeline.streamlit.app](https://fleet-reliability-pipeline.streamlit.app)**
+> Live EV fleet reliability dashboard powered by Supabase + Streamlit Cloud
 
 ## Architecture
 ```
@@ -136,3 +151,6 @@ fleet-reliability-pipeline/
 - Prophet 30-day failure forecast with risk tiers
 - Recent critical/high faults table with severity highlighting
 - Sidebar filters: component, severity, date range
+
+## Live Demo
+Dashboard: https://fleet-reliability-pipeline.streamlit.app
