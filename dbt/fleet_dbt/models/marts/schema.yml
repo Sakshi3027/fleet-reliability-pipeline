@@ -30,3 +30,16 @@ models:
         description: "True if any OTA update was pending during the month"
       - name: total_repair_cost
         description: "Total repair spend for this vehicle in this month"
+
+  - name: mart_anomaly_alerts
+    description: "Vehicles with fault counts more than 2 standard deviations above their baseline. Used for early warning alerts."
+    columns:
+      - name: vehicle_id
+        tests: [not_null]
+      - name: z_score
+        description: "How many standard deviations above the vehicle's own baseline"
+      - name: alert_level
+        description: "critical = 3+ sigma, warning = 2+ sigma"
+        tests:
+          - accepted_values:
+              values: ['critical', 'warning']

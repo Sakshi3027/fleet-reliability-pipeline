@@ -65,6 +65,8 @@ def vehicle_health():
 def forecasts():
     return load_query("SELECT * FROM mart_failure_forecast ORDER BY forecast_month")
 
+def anomaly_alerts():
+    return load_query("SELECT * FROM mart_anomaly_alerts ORDER BY z_score DESC")
 
 # ── Sidebar ───────────────────────────────────────────────────────────────────
 st.sidebar.markdown("## Fleet Reliability")
@@ -274,3 +276,56 @@ st.dataframe(
     use_container_width=True,
     hide_index=True,
 )
+
+# ── Row 6: Anomaly detection alerts ──────────────────────────────────────────
+st.markdown("---")
+st.subheader("Anomaly Detection — Fault Spike Alerts")
+st.caption("Vehicles with fault counts > 2 standard deviations above their own baseline")
+
+df_anomalies = anomaly_alerts()
+
+if df_anomalies.empty:
+    st.success("✅ No anomalies detected — all vehicles within normal fault ranges.")
+else:
+    df_anomalies["z_score"] = pd.to_numeric(df_anomalies["z_score"], errors="coerce")
+    df_anomalies["period_month"] = pd.to_datetime(df_anomalies["period_month"], utc=True)
+
+    # Summary metrics
+    a1, a2, a3 = st.columns(3)
+    a1.metric("Total Alerts",    len(df_anomalies))
+    a2.metric("Critical (3σ+)",  len(df_anomalies[df_anomalies["alert_level"] == "critical"]))
+    a3.metric("Warning (2σ+)",   len(df_anomalies[df_anomalies["alert_level"] == "warning"]))
+
+    # Top anomalies chart
+    top_anomalies = df_anomalies.head(20)
+    fig_a = px.bar(
+        top_anomalies,
+        x="vehicle_id",
+        y="z_score",
+        color="alert_level",
+        color_discrete_map={"critical": "#E24B4A", "warning": "#EF9F27"},
+        labels={"z_score": "Z-Score (σ)", "vehicle_id": "Vehicle"},
+        title="Top Anomalous Vehicles by Z-Score"
+    )
+    fig_a.add_hline(y=2, line_dash="dash", line_color="orange",
+                    annotation_text="Warning threshold (2σ)")
+    fig_a.add_hline(y=3, line_dash="dash", line_color="red",
+                    annotation_text="Critical threshold (3σ)")
+    fig_a.update_layout(margin=dict(l=0, r=0, t=40, b=0), xaxis_tickangle=-45)
+    st.plotly_chart(fig_a, use_container_width=True)
+
+    # Alert table
+    display_cols = ["alert_level", "vehicle_id", "vehicle_model",
+                    "component", "period_month", "total_faults",
+                    "avg_faults", "z_score"]
+    available = [c for c in display_cols if c in df_anomalies.columns]
+
+    alert_df = df_anomalies[available].copy()
+    alert_df["period_month"] = alert_df["period_month"].dt.strftime("%Y-%m")
+    alert_df["avg_faults"]   = pd.to_numeric(alert_df["avg_faults"],
+                                              errors="coerce").round(1)
+    alert_df.insert(0, "⚠️", alert_df["alert_level"].map({
+        "critical": "🔴", "warning": "🟠"
+    }))
+
+    st.dataframe(alert_df, use_container_width=True, hide_index=True)
