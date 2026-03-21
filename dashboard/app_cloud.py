@@ -79,8 +79,8 @@ df_fr       = failure_rates()
 df_health   = vehicle_health()
 df_forecast = forecasts()
 
-df_faults["occurred_at"]   = pd.to_datetime(df_faults["occurred_at"])
-df_repairs["repair_start"] = pd.to_datetime(df_repairs["repair_start"])
+df_faults["occurred_at"]   = pd.to_datetime(df_faults["occurred_at"], utc=True)
+df_repairs["repair_start"] = pd.to_datetime(df_repairs["repair_start"], utc=True)
 df_mttr["period_month"]    = pd.to_datetime(df_mttr["period_month"])
 df_fr["period_month"]      = pd.to_datetime(df_fr["period_month"])
 df_health["period_month"]  = pd.to_datetime(df_health["period_month"])
@@ -102,7 +102,8 @@ sel_dates = st.sidebar.date_input(
 st.sidebar.markdown("---")
 st.sidebar.caption("Data refreshes every 5 min")
 
-start, end = pd.Timestamp(sel_dates[0]), pd.Timestamp(sel_dates[1])
+start = pd.Timestamp(sel_dates[0]).tz_localize("UTC")
+end   = pd.Timestamp(sel_dates[1]).tz_localize("UTC")
 df_f = df_faults[
     df_faults["component"].isin(sel_components) &
     df_faults["severity"].isin(sel_severities) &
