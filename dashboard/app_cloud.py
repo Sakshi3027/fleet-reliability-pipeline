@@ -83,7 +83,9 @@ df_faults["occurred_at"]   = pd.to_datetime(df_faults["occurred_at"], utc=True)
 df_repairs["repair_start"] = pd.to_datetime(df_repairs["repair_start"], utc=True)
 df_mttr["period_month"]    = pd.to_datetime(df_mttr["period_month"])
 df_fr["period_month"]      = pd.to_datetime(df_fr["period_month"])
-df_health["period_month"]  = pd.to_datetime(df_health["period_month"])
+df_health["period_month"]  = pd.to_datetime(df_health["period_month"], utc=True)
+df_mttr["period_month"]    = pd.to_datetime(df_mttr["period_month"], utc=True)
+df_fr["period_month"]      = pd.to_datetime(df_fr["period_month"], utc=True)
 
 all_components = sorted(df_faults["component"].unique().tolist())
 sel_components = st.sidebar.multiselect(
@@ -186,6 +188,7 @@ with c4:
 c5, c6 = st.columns(2)
 with c5:
     st.subheader("Fleet Avg Battery SOH Over Time")
+    df_health["avg_battery_soh_pct"] = pd.to_numeric(df_health["avg_battery_soh_pct"], errors="coerce")
     soh = df_health.groupby("period_month")["avg_battery_soh_pct"].mean().reset_index()
     fig5 = px.area(soh, x="period_month", y="avg_battery_soh_pct",
                    color_discrete_sequence=["#1D9E75"],
