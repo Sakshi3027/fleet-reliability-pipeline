@@ -11,10 +11,9 @@ load_dotenv()
 
 st.set_page_config(
     page_title="Fleet Reliability Dashboard",
-    page_icon="🚗",
+    page_icon="dashboard/assets/ev_icon.png",
     layout="wide",
 )
-
 
 # ── DB connection ─────────────────────────────────────────────────────────────
 def get_conn_string():
@@ -68,8 +67,7 @@ def forecasts():
 
 
 # ── Sidebar ───────────────────────────────────────────────────────────────────
-st.sidebar.image("https://img.icons8.com/fluency/96/electric-vehicle.png", width=60)
-st.sidebar.title("Fleet Reliability")
+st.sidebar.markdown("## Fleet Reliability")
 st.sidebar.markdown("---")
 
 df_faults   = faults()
@@ -115,7 +113,7 @@ df_r = df_repairs[df_repairs["component"].isin(sel_components)]
 
 
 # ── Header ────────────────────────────────────────────────────────────────────
-st.title("🚗 Fleet Reliability Dashboard")
+st.title("⚡ Fleet Reliability Dashboard")
 st.caption(f"Showing {len(df_f):,} fault events across {df_f['vehicle_id'].nunique()} vehicles")
 st.markdown("---")
 
@@ -256,9 +254,9 @@ recent["occurred_at"] = recent["occurred_at"].dt.strftime("%Y-%m-%d %H:%M")
 
 def highlight_severity(row):
     if row["severity"] == "critical":
-        return ["background-color: #fde8e8"] * len(row)
+        return ["background-color: rgba(226,75,74,0.15); color: inherit"] * len(row)
     elif row["severity"] == "high":
-        return ["background-color: #fef3e2"] * len(row)
+        return ["background-color: rgba(239,159,39,0.15); color: inherit"] * len(row)
     return [""] * len(row)
 
 st.dataframe(
