@@ -68,6 +68,22 @@ def forecasts():
 def anomaly_alerts():
     return load_query("SELECT * FROM mart_anomaly_alerts ORDER BY z_score DESC")
 
+def cost_data():
+    return load_query("""
+        SELECT
+            component,
+            severity,
+            service_center,
+            root_cause,
+            is_warranty_claim,
+            parts_cost_usd,
+            labor_cost_usd,
+            parts_cost_usd + labor_cost_usd as total_cost,
+            repair_start
+        FROM raw_repair_logs
+        ORDER BY repair_start
+    """)
+
 # ── Sidebar ───────────────────────────────────────────────────────────────────
 st.sidebar.markdown("## Fleet Reliability")
 st.sidebar.markdown("---")
@@ -329,3 +345,106 @@ else:
     }))
 
     st.dataframe(alert_df, use_container_width=True, hide_index=True)
+
+# ── Row 7: Cost Analysis ──────────────────────────────────────────────────────
+st.markdown("---")
+st.subheader("💰 Repair Cost Analysis")
+
+df_cost = cost_data()
+df_cost["repair_start"] = pd.to_datetime(df_cost["repair_start"], utc=True)
+df_cost["total_cost"]   = pd.to_numeric(df_cost["total_cost"],   errors="coerce")
+df_cost["parts_cost_usd"] = pd.to_numeric(df_cost["parts_cost_usd"], errors="coerce")
+df_cost["labor_cost_usd"] = pd.to_numeric(df_cost["labor_cost_usd"], errors="coerce")
+
+# Filter by selected components
+df_cost = df_cost[df_cost["component"].isin(sel_components)]
+
+# Cost KPIs
+ca1, ca2, ca3, ca4 = st.columns(4)
+ca1.metric("Total Repair Spend",   f"${df_cost['total_cost'].sum():,.0f}")
+ca2.metric("Avg Cost per Repair",  f"${df_cost['total_cost'].mean():,.0f}")
+ca3.metric("Warranty Claims",      f"{df_cost['is_warranty_claim'].sum():,}")
+ca4.metric("Warranty Savings",
+           f"${df_cost[df_cost['is_warranty_claim']==True]['total_cost'].sum():,.0f}")
+
+cc1, cc2 = st.columns(2)
+
+with cc1:
+    st.markdown("**Cost by Component**")
+    cost_comp = (
+        df_cost.groupby("component")["total_cost"]
+        .sum().reset_index()
+        .sort_values("total_cost", ascending=True)
+    )
+    fig_c1 = px.bar(
+        cost_comp, x="total_cost", y="component",
+        orientation="h", color="total_cost",
+        color_continuous_scale="Oranges",
+        labels={"total_cost": "Total Cost ($)", "component": ""}
+    )
+    fig_c1.update_layout(margin=dict(l=0, r=0, t=0, b=0),
+                         coloraxis_showscale=False)
+    st.plotly_chart(fig_c1, use_container_width=True)
+
+with cc2:
+    st.markdown("**Cost by Root Cause**")
+    cost_root = (
+        df_cost.groupby("root_cause")["total_cost"]
+        .sum().reset_index()
+        .sort_values("total_cost", ascending=False)
+    )
+    fig_c2 = px.pie(
+        cost_root, names="root_cause", values="total_cost",
+        hole=0.4, color_discrete_sequence=px.colors.sequential.Oranges_r
+    )
+    fig_c2.update_layout(margin=dict(l=0, r=0, t=0, b=0),
+                         legend=dict(orientation="h", y=-0.2))
+    st.plotly_chart(fig_c2, use_container_width=True)
+
+cc3, cc4 = st.columns(2)
+
+with cc3:
+    st.markdown("**Monthly Repair Spend Trend**")
+    monthly_cost = (
+        df_cost.set_index("repair_start")
+        .resample("ME")["total_cost"].sum()
+        .reset_index()
+        .rename(columns={"repair_start": "month"})
+    )
+    fig_c3 = px.area(
+        monthly_cost, x="month", y="total_cost",
+        color_discrete_sequence=["#EF9F27"],
+        labels={"total_cost": "Total Cost ($)", "month": ""}
+    )
+    fig_c3.update_layout(margin=dict(l=0, r=0, t=0, b=0))
+    st.plotly_chart(fig_c3, use_container_width=True)
+
+with cc4:
+    st.markdown("**Parts vs Labor Cost Split**")
+    parts_total = df_cost["parts_cost_usd"].sum()
+    labor_total = df_cost["labor_cost_usd"].sum()
+    fig_c4 = px.pie(
+        values=[parts_total, labor_total],
+        names=["Parts", "Labor"],
+        hole=0.4,
+        color_discrete_sequence=["#E8593C", "#534AB7"]
+    )
+    fig_c4.update_layout(margin=dict(l=0, r=0, t=0, b=0))
+    st.plotly_chart(fig_c4, use_container_width=True)
+
+# Cost by service center table
+st.markdown("**Cost by Service Center**")
+cost_sc = (
+    df_cost.groupby("service_center")
+    .agg(
+        total_repairs=("total_cost", "count"),
+        total_cost=("total_cost", "sum"),
+        avg_cost=("total_cost", "mean"),
+        warranty_claims=("is_warranty_claim", "sum"),
+    )
+    .reset_index()
+    .sort_values("total_cost", ascending=False)
+)
+cost_sc["total_cost"] = cost_sc["total_cost"].apply(lambda x: f"${x:,.0f}")
+cost_sc["avg_cost"]   = cost_sc["avg_cost"].apply(lambda x: f"${x:,.0f}")
+st.dataframe(cost_sc, use_container_width=True, hide_index=True)
