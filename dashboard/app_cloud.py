@@ -210,7 +210,7 @@ with c6:
 
 # ── Row 4: Forecast ───────────────────────────────────────────────────────────
 st.markdown("---")
-st.subheader("🔮 30-Day Failure Forecast (Prophet)")
+st.subheader("30-Day Failure Forecast (Prophet)")
 df_forecast["forecast_month"]   = pd.to_datetime(df_forecast["forecast_month"])
 df_forecast["predicted_faults"] = pd.to_numeric(df_forecast["predicted_faults"])
 risk_colors = {"high": "#E24B4A", "medium": "#EF9F27", "low": "#1D9E75"}
@@ -243,14 +243,14 @@ with fc2:
 
 # ── Row 5: Recent critical faults ────────────────────────────────────────────
 st.markdown("---")
-st.subheader("🚨 Recent Critical & High Faults")
+st.subheader("Recent Critical & High Faults")
 recent = (
     df_faults[df_faults["severity"].isin(["critical", "high"])]
     .sort_values("occurred_at", ascending=False)
     .head(20)[["occurred_at", "vehicle_id", "component",
                "fault_code", "description", "severity", "resolved"]]
 )
-recent["occurred_at"] = recent["occurred_at"].dt.strftime("%Y-%m-%d %H:%M")
+recent["occurred_at"] = pd.to_datetime(recent["occurred_at"], utc=True).dt.strftime("%Y-%m-%d %H:%M")
 
 def highlight_severity(row):
     if row["severity"] == "critical":
