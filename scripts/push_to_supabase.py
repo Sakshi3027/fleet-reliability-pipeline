@@ -26,6 +26,7 @@ TABLES = [
     ("analytics_marts", "mart_mttr"),
     ("analytics_marts", "mart_failure_rates"),
     ("analytics_marts", "mart_vehicle_health"),
+    ("analytics_marts", "mart_anomaly_alerts"),
 ]
 
 
