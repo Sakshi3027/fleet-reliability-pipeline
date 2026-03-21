@@ -23,7 +23,7 @@ PYTHON       = sys.executable   # uses the same venv Airflow was started in
 
 def run_ingest(**context):
     result = subprocess.run(
-        [PYTHON, str(PROJECT_ROOT / "etl" / "ingest.py")],
+        [PYTHON, str(PROJECT_ROOT / "etl" / "ingest_incremental.py")],
         capture_output=True, text=True, cwd=str(PROJECT_ROOT)
     )
     print(result.stdout)
