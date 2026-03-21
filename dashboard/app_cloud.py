@@ -75,7 +75,7 @@ def cost_data():
             severity,
             service_center,
             root_cause,
-            is_warranty_claim,
+            warranty_claim as is_warranty_claim,
             parts_cost_usd,
             labor_cost_usd,
             parts_cost_usd + labor_cost_usd as total_cost,
